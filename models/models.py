@@ -1,6 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 
-# Initialize the db object
 db = SQLAlchemy()
 
 # User Model
@@ -18,5 +17,6 @@ class Book(db.Model):
     genre = db.Column(db.String(100), nullable=True)
     rating = db.Column(db.Float, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    order_index = db.Column(db.Integer, nullable=True)  # Add this line
 
     user = db.relationship('User', backref='books', lazy=True)

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -31,6 +31,7 @@ class Book(db.Model):
     genre = db.Column(db.String(100), nullable=True)
     rating = db.Column(db.Float, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    order_index = db.Column(db.Integer, default=0)  # For storing book order
 
     user = db.relationship('User', backref='books', lazy=True)
 
@@ -157,6 +158,19 @@ def add_book():
     flash(f'Book "{title}" added to your shelf!', 'success')
     return redirect(url_for('dashboard'))
 
+# Update Book Order (via drag-and-drop)
+@app.route('/update_order', methods=['POST'])
+@login_required
+def update_order():
+    # Retrieve the updated order of books from the request
+    book_ids = request.json.get('book_ids')
+    for index, book_id in enumerate(book_ids):
+        book = Book.query.get(book_id)
+        if book:
+            book.order_index = index  # Save the order to the database
+            db.session.commit()
+    return {'status': 'success'}, 200
+
 # Logout
 @app.route('/logout')
 @login_required
@@ -164,7 +178,6 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-# Search Books
 # Search Books
 @app.route('/search', methods=['GET', 'POST'])
 def search():

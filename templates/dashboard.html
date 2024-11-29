@@ -1,4 +1,3 @@
-<!-- Dashboard Page (User's Books) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,25 +13,9 @@
         <h2>Welcome, {{ current_user.username }}!</h2>
         <p>Your Book Collection:</p>
 
-        <!-- Sorting Options -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <form method="GET" action="{{ url_for('dashboard') }}" class="d-flex">
-                <select name="sort_by" class="form-select me-2">
-                    <option value="title" {% if request.args.get('sort_by') == 'title' %}selected{% endif %}>Sort by Title</option>
-                    <option value="author" {% if request.args.get('sort_by') == 'author' %}selected{% endif %}>Sort by Author</option>
-                    <option value="rating" {% if request.args.get('sort_by') == 'rating' %}selected{% endif %}>Sort by Rating</option>
-                </select>
-                <select name="order" class="form-select me-2">
-                    <option value="asc" {% if request.args.get('order') == 'asc' %}selected{% endif %}>Ascending</option>
-                    <option value="desc" {% if request.args.get('order') == 'desc' %}selected{% endif %}>Descending</option>
-                </select>
-                <button type="submit" class="btn btn-primary">Apply</button>
-            </form>
-        </div>
-
-        <div class="row mt-4">
+        <div id="book-list" class="row mt-4">
             {% for book in books %}
-                <div class="col-md-3 mb-4">
+                <div class="col-md-3 mb-4" id="book-{{ book.id }}" class="draggable" data-id="{{ book.id }}">
                     <div class="card">
                         <img src="{{ book.thumbnail }}" class="card-img-top" alt="Book Thumbnail">
                         <div class="card-body">
@@ -47,7 +30,42 @@
                 </div>
             {% endfor %}
         </div>
+
+        {% if books|length > 2 %}
+            <button id="save-order" class="btn btn-primary mt-3">Save Book Order</button>
+        {% endif %}
+
         <a href="{{ url_for('logout') }}" class="btn btn-danger mt-3">Logout</a>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        // Initialize sortable on the book list
+        const bookList = document.getElementById('book-list');
+        const sortable = new Sortable(bookList, {
+            draggable: 'li',  // Draggable items are now li elements
+            onEnd(evt) {
+                // Get the updated order of book IDs from the sorted list
+                const bookIds = Array.from(bookList.children).map(item => item.dataset.id);
+                
+                // Send the updated order to the backend
+                fetch("{{ url_for('update_order') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ book_ids: bookIds })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Book order updated!');
+                    } else {
+                        alert('Failed to update book order.');
+                    }
+                });
+            }
+        });
+    </script>    
 </body>
 </html>
