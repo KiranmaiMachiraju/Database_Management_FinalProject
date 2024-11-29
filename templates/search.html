@@ -7,39 +7,34 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-    {% include 'template.html' %}
+    {% extends 'template.html' %}
 
-    <div class="container mt-5">
-        <h2>Search for Books</h2>
-        <form method="GET" action="{{ url_for('search') }}">
-            <div class="mb-3">
-                <input type="text" class="form-control" name="query" placeholder="Enter book title or author" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Search</button>
+    {% block content %}
+        <h1>Search for Books</h1>
+        
+        <form method="POST">
+            <input type="text" name="query" placeholder="Enter book name or keyword" required>
+            <button type="submit">Search</button>
         </form>
-
+    
         {% if books %}
-        <h4>Search Results:</h4>
-        <div class="row mt-4">
-            {% for book in books %}
-                <div class="col-md-3 mb-4">
-                    <div class="card">
-                        <img src="{{ book.thumbnail }}" class="card-img-top" alt="Book Thumbnail">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ book.title }}</h5>
-                            <p class="card-text">Author: {{ book.author }}</p>
-                            <p class="card-text">{{ book.description[:100] }}...</p>
-                            <a href="{{ book.link }}" class="btn btn-info" target="_blank">More Info</a>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+            <h2>Search Results:</h2>
+            <ul>
+                {% for book in books %}
+                    <li>
+                        <h3>{{ book.title }}</h3>
+                        <p><strong>Author:</strong> {{ book.author }}</p>
+                        <p>{{ book.description }}</p>
+                        <a href="{{ book.link }}" target="_blank">More Info</a>
+                        <img src="{{ book.thumbnail }}" alt="{{ book.title }} thumbnail" />
+                    </li>
+                {% endfor %}
+            </ul>
         {% else %}
-            <p>No books found. Try a different search.</p>
+            <p>No books found. Try searching again!</p>
         {% endif %}
-    </div>
-
+    {% endblock %}
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

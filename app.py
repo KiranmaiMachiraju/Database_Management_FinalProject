@@ -3,8 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
-from flask_migrate import Migrate  # Import Migrate
-
+from flask_migrate import Migrate
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -41,7 +40,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # Google Books API Key
-API_KEY = 'AIzaSyCyVgnY4TAUURkXoi9ba4JqhTSpucLFFcc'
+API_KEY = 'AIzaSyCyVgnY4TAUURkXoi9ba4JqhTSpucLFFcc'  # Your API key
 
 # Home Page (Popular Books)
 @app.route('/')
@@ -97,12 +96,66 @@ def auth():
     return render_template('auth.html')
 
 # Dashboard Page (User's Books)
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    print(current_user.username)  # Debug: check if the logged-in user is correct
-    books = Book.query.filter_by(user_id=current_user.id).all()
-    return render_template('dashboard.html', user=current_user)
+    # Get sorting options from query parameters
+    sort_by = request.args.get('sort_by', 'title')  # Default to sorting by title
+    order = request.args.get('order', 'asc')  # Default to ascending order
+
+    # Fetch books for the current user
+    if sort_by == 'title':
+        books = Book.query.filter_by(user_id=current_user.id).order_by(
+            Book.title.asc() if order == 'asc' else Book.title.desc()
+        ).all()
+    elif sort_by == 'author':
+        books = Book.query.filter_by(user_id=current_user.id).order_by(
+            Book.author.asc() if order == 'asc' else Book.author.desc()
+        ).all()
+    elif sort_by == 'rating':
+        books = Book.query.filter_by(user_id=current_user.id).order_by(
+            Book.rating.desc() if order == 'desc' else Book.rating.asc()
+        ).all()
+    else:
+        books = Book.query.filter_by(user_id=current_user.id).all()  # Default case
+
+    # Handle search functionality if submitted
+    if request.method == 'POST':
+        query = request.form.get('query')  # Search query
+        if query:
+            url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={API_KEY}'
+            response = requests.get(url)
+            data = response.json()
+
+            search_results = []
+            if 'items' in data:
+                search_results = [{
+                    'title': item['volumeInfo'].get('title', 'No Title'),
+                    'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
+                    'description': item['volumeInfo'].get('description', 'No description available'),
+                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
+                } for item in data['items']]
+
+            return render_template('dashboard.html', user=current_user, books=books, search_results=search_results)
+
+    return render_template('dashboard.html', user=current_user, books=books)
+
+# Add Book to Shelf
+@app.route('/add_book', methods=['POST'])
+@login_required
+def add_book():
+    title = request.form.get('title')
+    author = request.form.get('author')
+    description = request.form.get('description')
+    genre = request.form.get('genre')
+    rating = request.form.get('rating')
+
+    # Add the book to the database
+    new_book = Book(title=title, author=author, description=description, genre=genre, rating=rating, user_id=current_user.id)
+    db.session.add(new_book)
+    db.session.commit()
+    flash(f'Book "{title}" added to your shelf!', 'success')
+    return redirect(url_for('dashboard'))
 
 # Logout
 @app.route('/logout')
@@ -111,27 +164,29 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+# Search Books
+# Search Books
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    query = request.args.get('query')  # Get the search query from the URL
-    books = []  # Default to an empty list in case of no results
+    search_results = []
+    if request.method == 'POST':
+        query = request.form.get('query')  # Get the search query
+        if query:
+            url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={API_KEY}'
+            response = requests.get(url)
+            data = response.json()
 
-    if query:
-        # Search books using Google Books API based on query
-        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={API_KEY}'
-        response = requests.get(url)
-        data = response.json()
+            # Check if there are any books returned
+            if 'items' in data:
+                search_results = [{
+                    'title': item['volumeInfo'].get('title', 'No Title'),
+                    'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
+                    'description': item['volumeInfo'].get('description', 'No description available'),
+                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
+                    'link': item['volumeInfo'].get('infoLink', '#')
+                } for item in data['items']]
 
-        if 'items' in data:
-            books = [{
-                'title': item['volumeInfo'].get('title', 'No Title'),
-                'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
-                'description': item['volumeInfo'].get('description', 'No description available'),
-                'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
-                'link': item['volumeInfo'].get('infoLink', '#')
-            } for item in data['items']]
-
-    return render_template('search.html', books=books)
+    return render_template('search.html', books=search_results)
 
 if __name__ == '__main__':
     app.run(debug=True)
