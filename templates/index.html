@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Top Book Recommendations of the Week{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    {% include 'template.html' %}
+
+    <div class="container mt-5">
+        <h1>Top Book Recommendations of the Week</h1>
+
+        <div class="book-list">
+            {% for book in books %}
+                <div class="book-item">
+                    <img src="{{ book.thumbnail }}" alt="{{ book.title }}">
+                    <h3>{{ book.title }}</h3>
+                    <p><strong>Author:</strong> {{ book.author }}</p>
+                    <p>{{ book.description[:100] }}...</p>
+                    <a href="https://www.google.com/search?q={{ book.title }}+{{ book.author }}" target="_blank" class="btn btn-info">More about this book</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
