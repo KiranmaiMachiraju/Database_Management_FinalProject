@@ -43,7 +43,7 @@
         // Initialize sortable on the book list
         const bookList = document.getElementById('book-list');
         const sortable = new Sortable(bookList, {
-            draggable: 'li',  // Draggable items are now li elements
+            draggable: '.draggable',  // Corrected selector to target book items with the class 'draggable'
             onEnd(evt) {
                 // Get the updated order of book IDs from the sorted list
                 const bookIds = Array.from(bookList.children).map(item => item.dataset.id);

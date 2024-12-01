@@ -16,6 +16,13 @@
             {% if current_user.is_authenticated %}
                 <li><a href="{{ url_for('dashboard') }}" style="color: white; text-decoration: none; padding: 10px;">Dashboard</a></li>
                 <li><a href="{{ url_for('logout') }}" style="color: white; text-decoration: none; padding: 10px;">Logout</a></li>
+                
+                {% if current_user.is_admin %}
+                    <!-- Admin Links -->
+                    <li><a href="{{ url_for('admin') }}" style="color: white; text-decoration: none; padding: 10px;">Admin Dashboard</a></li>
+                    <li><a href="{{ url_for('manage_users') }}" style="color: white; text-decoration: none; padding: 10px;">Manage Users</a></li>
+                    <li><a href="{{ url_for('manage_books') }}" style="color: white; text-decoration: none; padding: 10px;">Manage Books</a></li>
+                {% endif %}
             {% endif %}
         </ul>
     </nav>

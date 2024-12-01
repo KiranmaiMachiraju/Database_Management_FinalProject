@@ -1,22 +1,31 @@
+# models.py
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship  # Import relationship here
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
 # User Model
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)  # Admin flag
+    
+    books = db.relationship('Book', back_populates='user')
 
 # Book Model
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    author = db.Column(db.String(150), nullable=False)
-    description = db.Column(db.String(500), nullable=True)
-    genre = db.Column(db.String(100), nullable=True)
-    rating = db.Column(db.Float, nullable=True)
+    title = db.Column(db.String(255))
+    author = db.Column(db.String(255))
+    description = db.Column(db.String(500))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    order_index = db.Column(db.Integer, nullable=True)  # Add this line
+    thumbnail = db.Column(db.String(255), nullable=True)
+    rating = db.Column(db.Float, nullable=True)
+    order_index = db.Column(db.Integer)  # New column to store the order index
 
-    user = db.relationship('User', backref='books', lazy=True)
+    user = db.relationship('User', back_populates='books')
+
+    def __repr__(self):
+        return f'<Book {self.title}>'

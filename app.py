@@ -1,47 +1,86 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-import requests
+from models import db, User, Book  # Use `db` from models.py
 from flask_migrate import Migrate
+import requests
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Use a strong secret key
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # Your database URI
-db = SQLAlchemy(app)  # Initialize SQLAlchemy with app
-migrate = Migrate(app, db)  # Initialize Flask-Migrate
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # Database URI
+
+# Initialize extensions
+db.init_app(app)  # Initialize the db instance from models.py
+migrate = Migrate(app, db)
 
 # Initialize Flask-Login
 login_manager = LoginManager(app)
 login_manager.login_view = 'auth'  # Redirect to login page if not logged in
 
-# User Model
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-
-# Book Model
-class Book(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    author = db.Column(db.String(150), nullable=False)
-    description = db.Column(db.String(500), nullable=True)
-    genre = db.Column(db.String(100), nullable=True)
-    rating = db.Column(db.Float, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    order_index = db.Column(db.Integer, default=0)  # For storing book order
-
-    user = db.relationship('User', backref='books', lazy=True)
 
 # Load user for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
 # Google Books API Key
-API_KEY = 'AIzaSyCyVgnY4TAUURkXoi9ba4JqhTSpucLFFcc'  # Your API key
+API_KEY = 'AIzaSyCyVgnY4TAUURkXoi9ba4JqhTSpucLFFcc'  # Replace with your API key
+
+
+# Admin Login
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Check for admin user
+        user = User.query.filter_by(username=username, is_admin=True).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            flash('Admin login successful!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid admin credentials.', 'danger')
+
+    return render_template('admin_login.html')
+
+
+# Admin Dashboard
+@app.route('/admin_dashboard')
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        flash('Access denied. Admins only.', 'danger')
+        return redirect(url_for('index'))
+
+    # Fetch all users and their associated books
+    users = User.query.all()
+    return render_template('admin.html', users=users)
+
+
+# CLI Command: Create Admin User
+@app.cli.command("create_admin")
+def create_admin():
+    # Wrap the logic inside the app context
+    with app.app_context():
+        username = input("Enter admin username: ")
+        password = input("Enter admin password: ")
+
+        # Check if the admin user already exists
+        existing_admin = User.query.filter_by(username=username).first()
+        if existing_admin:
+            print(f"Admin with username {username} already exists.")
+        else:
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+            admin_user = User(username=username, password=hashed_password, is_admin=True)
+            db.session.add(admin_user)
+            db.session.commit()
+            print(f"Admin user {username} created successfully.")
+
 
 # Home Page (Popular Books)
 @app.route('/')
@@ -62,6 +101,7 @@ def index():
 
     return render_template('index.html', books=books)
 
+
 # Auth (Login and Sign-up)
 @app.route('/auth', methods=['GET', 'POST'])
 def auth():
@@ -75,7 +115,7 @@ def auth():
             if user and check_password_hash(user.password, password):  # Assuming password is hashed
                 login_user(user)
                 flash('Login successful!', 'success')
-                return redirect(url_for('dashboard'))  # Redirect to dashboard after login
+                return redirect(url_for('dashboard'))
             else:
                 flash('Invalid username or password.', 'danger')
 
@@ -96,29 +136,13 @@ def auth():
 
     return render_template('auth.html')
 
+
 # Dashboard Page (User's Books)
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    # Get sorting options from query parameters
-    sort_by = request.args.get('sort_by', 'title')  # Default to sorting by title
-    order = request.args.get('order', 'asc')  # Default to ascending order
-
     # Fetch books for the current user
-    if sort_by == 'title':
-        books = Book.query.filter_by(user_id=current_user.id).order_by(
-            Book.title.asc() if order == 'asc' else Book.title.desc()
-        ).all()
-    elif sort_by == 'author':
-        books = Book.query.filter_by(user_id=current_user.id).order_by(
-            Book.author.asc() if order == 'asc' else Book.author.desc()
-        ).all()
-    elif sort_by == 'rating':
-        books = Book.query.filter_by(user_id=current_user.id).order_by(
-            Book.rating.desc() if order == 'desc' else Book.rating.asc()
-        ).all()
-    else:
-        books = Book.query.filter_by(user_id=current_user.id).all()  # Default case
+    books = Book.query.filter_by(user_id=current_user.id).all()
 
     # Handle search functionality if submitted
     if request.method == 'POST':
@@ -130,16 +154,12 @@ def dashboard():
 
             search_results = []
             if 'items' in data:
-                search_results = [{
-                    'title': item['volumeInfo'].get('title', 'No Title'),
-                    'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
-                    'description': item['volumeInfo'].get('description', 'No description available'),
-                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
-                } for item in data['items']]
+                search_results = [item['volumeInfo'] for item in data['items']]
 
             return render_template('dashboard.html', user=current_user, books=books, search_results=search_results)
 
     return render_template('dashboard.html', user=current_user, books=books)
+
 
 # Add Book to Shelf
 @app.route('/add_book', methods=['POST'])
@@ -148,35 +168,14 @@ def add_book():
     title = request.form.get('title')
     author = request.form.get('author')
     description = request.form.get('description')
-    genre = request.form.get('genre')
-    rating = request.form.get('rating')
 
     # Add the book to the database
-    new_book = Book(title=title, author=author, description=description, genre=genre, rating=rating, user_id=current_user.id)
+    new_book = Book(title=title, author=author, description=description, user_id=current_user.id)
     db.session.add(new_book)
     db.session.commit()
     flash(f'Book "{title}" added to your shelf!', 'success')
     return redirect(url_for('dashboard'))
 
-# Update Book Order (via drag-and-drop)
-@app.route('/update_order', methods=['POST'])
-@login_required
-def update_order():
-    # Retrieve the updated order of books from the request
-    book_ids = request.json.get('book_ids')
-    for index, book_id in enumerate(book_ids):
-        book = Book.query.get(book_id)
-        if book:
-            book.order_index = index  # Save the order to the database
-            db.session.commit()
-    return {'status': 'success'}, 200
-
-# Logout
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
 
 # Search Books
 @app.route('/search', methods=['GET', 'POST'])
@@ -189,17 +188,61 @@ def search():
             response = requests.get(url)
             data = response.json()
 
-            # Check if there are any books returned
             if 'items' in data:
-                search_results = [{
-                    'title': item['volumeInfo'].get('title', 'No Title'),
-                    'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
-                    'description': item['volumeInfo'].get('description', 'No description available'),
-                    'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
-                    'link': item['volumeInfo'].get('infoLink', '#')
-                } for item in data['items']]
+                search_results = [item['volumeInfo'] for item in data['items']]
 
     return render_template('search.html', books=search_results)
+
+
+# Add Book to User's Shelf (from Search Results)
+@app.route('/add_book_to_shelf', methods=['POST'])
+@login_required
+def add_book_to_shelf():
+    title = request.form.get('title')
+    author = request.form.get('author')
+    description = request.form.get('description')
+
+    # Check if the book already exists on the user's shelf
+    existing_book = Book.query.filter_by(title=title, user_id=current_user.id).first()
+
+    if not existing_book:
+        new_book = Book(title=title, author=author, description=description, user_id=current_user.id)
+        db.session.add(new_book)
+        db.session.commit()
+        flash(f'Book "{title}" added to your shelf!', 'success')
+    else:
+        flash('This book is already on your shelf.', 'info')
+
+    return redirect(url_for('search'))
+
+@app.route('/update_order', methods=['POST'])
+@login_required
+def update_order():
+    # Get the list of book IDs from the request body
+    data = request.get_json()
+    book_ids = data.get('book_ids', [])
+
+    if not book_ids:
+        return {"status": "error", "message": "No book IDs provided"}, 400
+
+    # Update the book order in the database
+    for index, book_id in enumerate(book_ids):
+        book = Book.query.get(book_id)
+        if book:
+            book.order_index = index  # Assuming you have an 'order_index' field in the Book model
+            db.session.add(book)
+
+    db.session.commit()
+
+    return {"status": "success"}
+
+# Logout
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

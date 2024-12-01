@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+
+{% extends 'template.html' %}
+
+{% block content %}
+  <h2>Admin Dashboard</h2>
+
+  <!-- Admin Navigation -->
+  <nav class="mb-4">
+    <div class="nav nav-pills">
+      <a class="nav-link {% if request.endpoint == 'admin' %}active{% endif %}" href="{{ url_for('admin') }}">Dashboard</a>
+      <a class="nav-link {% if request.endpoint == 'manage_users' %}active{% endif %}" href="{{ url_for('manage_users') }}">Manage Users</a>
+      <a class="nav-link {% if request.endpoint == 'manage_books' %}active{% endif %}" href="{{ url_for('manage_books') }}">Manage Books</a>
+    </div>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          Recent Activity
+        </div>
+        <div class="card-body">
+          <p>No recent activity to display.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
