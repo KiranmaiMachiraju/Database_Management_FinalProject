@@ -19,16 +19,13 @@ migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'auth'  # Redirect to login page if not logged in
 
-
 # Load user for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
 # Google Books API Key
 API_KEY = 'AIzaSyCyVgnY4TAUURkXoi9ba4JqhTSpucLFFcc'  # Replace with your API key
-
 
 # Admin Login
 @app.route('/admin_login', methods=['GET', 'POST'])
@@ -48,7 +45,6 @@ def admin_login():
 
     return render_template('admin_login.html')
 
-
 # Admin Dashboard
 @app.route('/admin_dashboard')
 @login_required
@@ -57,15 +53,19 @@ def admin_dashboard():
         flash('Access denied. Admins only.', 'danger')
         return redirect(url_for('index'))
 
-    # Fetch all users and their associated books
+    # Fetch all users
     users = User.query.all()
-    return render_template('admin.html', users=users)
 
+    # Create a dictionary of users and their books
+    user_books = {}
+    for user in users:
+        user_books[user.id] = Book.query.filter_by(user_id=user.id).all()
+
+    return render_template('admin_dashboard.html', users=users, user_books=user_books)
 
 # CLI Command: Create Admin User
 @app.cli.command("create_admin")
 def create_admin():
-    # Wrap the logic inside the app context
     with app.app_context():
         username = input("Enter admin username: ")
         password = input("Enter admin password: ")
@@ -81,7 +81,6 @@ def create_admin():
             db.session.commit()
             print(f"Admin user {username} created successfully.")
 
-
 # Home Page (Popular Books)
 @app.route('/')
 def index():
@@ -95,12 +94,11 @@ def index():
             'title': item['volumeInfo'].get('title', 'No Title'),
             'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
             'description': item['volumeInfo'].get('description', 'No description available'),
-            'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', ''),
+            'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', 'https://via.placeholder.com/150'),
             'link': item['volumeInfo'].get('infoLink', '#')
         } for item in data['items']]
 
     return render_template('index.html', books=books)
-
 
 # Auth (Login and Sign-up)
 @app.route('/auth', methods=['GET', 'POST'])
@@ -115,7 +113,12 @@ def auth():
             if user and check_password_hash(user.password, password):  # Assuming password is hashed
                 login_user(user)
                 flash('Login successful!', 'success')
-                return redirect(url_for('dashboard'))
+                
+                # Redirect based on user type (admin or regular user)
+                if user.is_admin:
+                    return redirect(url_for('admin_dashboard'))  # Admin should go to admin dashboard
+                else:
+                    return redirect(url_for('dashboard'))  # Regular user should go to user dashboard
             else:
                 flash('Invalid username or password.', 'danger')
 
@@ -136,11 +139,14 @@ def auth():
 
     return render_template('auth.html')
 
-
 # Dashboard Page (User's Books)
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    if current_user.is_admin:
+        flash('Access denied. Admins cannot access user dashboards.', 'danger')
+        return redirect(url_for('admin_dashboard'))  # Redirect admins to the admin dashboard
+    
     # Fetch books for the current user
     books = Book.query.filter_by(user_id=current_user.id).all()
 
@@ -160,7 +166,6 @@ def dashboard():
 
     return render_template('dashboard.html', user=current_user, books=books)
 
-
 # Add Book to Shelf
 @app.route('/add_book', methods=['POST'])
 @login_required
@@ -176,23 +181,34 @@ def add_book():
     flash(f'Book "{title}" added to your shelf!', 'success')
     return redirect(url_for('dashboard'))
 
-
 # Search Books
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    search_results = []
-    if request.method == 'POST':
-        query = request.form.get('query')  # Get the search query
-        if query:
-            url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={API_KEY}'
-            response = requests.get(url)
+    books = []
+    query = request.args.get('query', '')  # Get the search query from the URL parameters
+    
+    # Handle search functionality
+    if query:
+        # Request up to 20 books from Google Books API
+        url = f"https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=20&key={API_KEY}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
             data = response.json()
+            for item in data.get('items', []):
+                volume_info = item.get('volumeInfo', {})
+                image_links = volume_info.get('imageLinks', {})
+                books.append({
+                    'title': volume_info.get('title', 'No Title'),
+                    'author': ', '.join(volume_info.get('authors', ['Unknown Author'])),
+                    'description': volume_info.get('description', 'No Description Available'),
+                    'thumbnail': image_links.get('thumbnail', 'https://via.placeholder.com/150'),
+                    'infoLink': volume_info.get('infoLink', '#')
+                })
+        else:
+            print("Error fetching data from Google Books API:", response.status_code)
 
-            if 'items' in data:
-                search_results = [item['volumeInfo'] for item in data['items']]
-
-    return render_template('search.html', books=search_results)
-
+    return render_template('search.html', books=books, query=query)
 
 # Add Book to User's Shelf (from Search Results)
 @app.route('/add_book_to_shelf', methods=['POST'])
@@ -215,34 +231,28 @@ def add_book_to_shelf():
 
     return redirect(url_for('search'))
 
-@app.route('/update_order', methods=['POST'])
+# Remove Book from User's Shelf
+@app.route('/remove_book_from_shelf/<int:book_id>', methods=['POST'])
 @login_required
-def update_order():
-    # Get the list of book IDs from the request body
-    data = request.get_json()
-    book_ids = data.get('book_ids', [])
+def remove_book_from_shelf(book_id):
+    # Fetch the book by its ID and ensure it belongs to the current user
+    book = Book.query.filter_by(id=book_id, user_id=current_user.id).first()
 
-    if not book_ids:
-        return {"status": "error", "message": "No book IDs provided"}, 400
+    if book:
+        db.session.delete(book)
+        db.session.commit()
+        flash(f'Book "{book.title}" removed from your shelf.', 'success')
+    else:
+        flash('The book could not be found or does not belong to your shelf.', 'danger')
 
-    # Update the book order in the database
-    for index, book_id in enumerate(book_ids):
-        book = Book.query.get(book_id)
-        if book:
-            book.order_index = index  # Assuming you have an 'order_index' field in the Book model
-            db.session.add(book)
-
-    db.session.commit()
-
-    return {"status": "success"}
+    return redirect(url_for('dashboard'))
 
 # Logout
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))
-
+    return redirect(url_for('index'))  # Redirect to the home page
 
 if __name__ == '__main__':
     app.run(debug=True)
