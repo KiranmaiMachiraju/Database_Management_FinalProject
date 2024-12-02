@@ -28,47 +28,55 @@ def load_user(user_id):
 API_KEY = 'AIzaSyCyVgnY4TAUURkXoi9ba4JqhTSpucLFFcc'  # Replace with your API key
 
 # Admin Login
+# Admin Login Route
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Check for admin user
+        # Query the admin user
         user = User.query.filter_by(username=username, is_admin=True).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            flash('Admin login successful!', 'success')
-            return redirect(url_for('admin_dashboard'))
-        else:
-            flash('Invalid admin credentials.', 'danger')
+
+        if not user:
+            flash('Admin user not found. Please check your username.', 'danger')
+            return render_template('admin_login.html')
+
+        if not check_password_hash(user.password, password):
+            flash('Incorrect password. Please try again.', 'danger')
+            return render_template('admin_login.html')
+
+        # Log in the admin user
+        login_user(user)
+        flash('Admin login successful!', 'success')
+        return redirect(url_for('admin_dashboard'))
 
     return render_template('admin_login.html')
 
-# Admin Dashboard
+
+# Admin Dashboard Route
 @app.route('/admin_dashboard')
 @login_required
 def admin_dashboard():
+    # Ensure the current user is an admin
     if not current_user.is_admin:
         flash('Access denied. Admins only.', 'danger')
         return redirect(url_for('index'))
 
-    # Fetch all users
+    # Fetch all users and their books
     users = User.query.all()
-
-    # Create a dictionary of users and their books
-    user_books = {}
-    for user in users:
-        user_books[user.id] = Book.query.filter_by(user_id=user.id).all()
+    user_books = {user.id: Book.query.filter_by(user_id=user.id).all() for user in users}
 
     return render_template('admin_dashboard.html', users=users, user_books=user_books)
+
 
 # CLI Command: Create Admin User
 @app.cli.command("create_admin")
 def create_admin():
+    from getpass import getpass  # Use getpass for secure password input
     with app.app_context():
         username = input("Enter admin username: ")
-        password = input("Enter admin password: ")
+        password = getpass("Enter admin password: ")
 
         # Check if the admin user already exists
         existing_admin = User.query.filter_by(username=username).first()
@@ -80,6 +88,7 @@ def create_admin():
             db.session.add(admin_user)
             db.session.commit()
             print(f"Admin user {username} created successfully.")
+
 
 # Home Page (Popular Books)
 @app.route('/')
