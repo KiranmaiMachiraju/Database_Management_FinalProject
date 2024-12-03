@@ -2,14 +2,16 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Book  # Use `db` from models.py
+from models import db, User, Book, RecentActivity  # Use `db` from models.py
 from flask_migrate import Migrate
 import requests
+from flask_login import login_user
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'  # Use a strong secret key
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/users.db'  # Database URI
+app.config['SECRET_KEY'] = 'your_secret_key'  
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(os.getcwd(), "instance", "users.db")}'
 
 # Initialize extensions
 db.init_app(app)  # Initialize the db instance from models.py
@@ -119,6 +121,9 @@ def index():
 
 
 # Auth (Login and Sign-up)
+from flask_login import login_user
+from datetime import datetime
+
 @app.route('/auth', methods=['GET', 'POST'])
 def auth():
     if request.method == 'POST':
@@ -130,6 +135,16 @@ def auth():
 
             if user and check_password_hash(user.password, password):  # Assuming password is hashed
                 login_user(user)
+
+                # Log the login activity
+                activity = RecentActivity(
+                    activity_type='logged_in',
+                    description=f'User {user.username} logged in.',
+                    user_id=user.id,
+                    timestamp=datetime.utcnow()
+                )
+                db.session.add(activity)
+                db.session.commit()
 
                 # Redirect based on user type (admin or regular user)
                 if user.is_admin:
@@ -152,10 +167,20 @@ def auth():
                 new_user = User(username=username, password=hashed_password)
                 db.session.add(new_user)
                 db.session.commit()
+
+                # Log the sign-up activity
+                activity = RecentActivity(
+                    activity_type='signed_up',
+                    description=f'User {new_user.username} signed up.',
+                    user_id=new_user.id,
+                    timestamp=datetime.utcnow()
+                )
+                db.session.add(activity)
+                db.session.commit()
+
                 flash('Sign Up successful! You can now log in.', 'success')
 
     return render_template('auth.html')
-
 
 # Dashboard Page (User's Books)
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -167,6 +192,9 @@ def dashboard():
     
     # Fetch books for the current user
     books = Book.query.filter_by(user_id=current_user.id).all()
+
+    # Fetch recent activities for the current user (limit to the latest 5)
+    activities = RecentActivity.query.filter_by(user_id=current_user.id).order_by(RecentActivity.timestamp.desc()).limit(5).all()
 
     # Handle search functionality if submitted
     if request.method == 'POST':
@@ -180,24 +208,10 @@ def dashboard():
             if 'items' in data:
                 search_results = [item['volumeInfo'] for item in data['items']]
 
-            return render_template('dashboard.html', user=current_user, books=books, search_results=search_results)
+            return render_template('dashboard.html', user=current_user, books=books, search_results=search_results, activities=activities)
 
-    return render_template('dashboard.html', user=current_user, books=books)
+    return render_template('dashboard.html', user=current_user, books=books, activities=activities)
 
-# Add Book to Shelf
-@app.route('/add_book', methods=['POST'])
-@login_required
-def add_book():
-    title = request.form.get('title')
-    author = request.form.get('author')
-    description = request.form.get('description')
-
-    # Add the book to the database
-    new_book = Book(title=title, author=author, description=description, user_id=current_user.id)
-    db.session.add(new_book)
-    db.session.commit()
-    flash(f'Book "{title}" added to your shelf!', 'success')
-    return redirect(url_for('dashboard'))
 
 # Search Books
 @app.route('/search', methods=['GET', 'POST'])
@@ -228,7 +242,7 @@ def search():
 
     return render_template('search.html', books=books, query=query)
 
-# Add Book to User's Shelf (from Search Results)
+# Add Book to Shelf (from both Dashboard and Search)
 @app.route('/add_book_to_shelf', methods=['POST'])
 @login_required
 def add_book_to_shelf():
@@ -240,14 +254,22 @@ def add_book_to_shelf():
     existing_book = Book.query.filter_by(title=title, user_id=current_user.id).first()
 
     if not existing_book:
+        # Add the book to the database
         new_book = Book(title=title, author=author, description=description, user_id=current_user.id)
         db.session.add(new_book)
         db.session.commit()
+
+        # Log the activity (optional)
+        activity = RecentActivity(user_id=current_user.id, activity_type='add_book', description=f'Added book: {title}', timestamp=datetime.utcnow())
+        db.session.add(activity)
+        db.session.commit()
+
         flash(f'Book "{title}" added to your shelf!', 'success')
     else:
         flash('This book is already on your shelf.', 'info')
 
-    return redirect(url_for('search'))
+    # Redirect user to the appropriate page after adding the book
+    return redirect(url_for('dashboard')) if request.form.get('from_dashboard') else redirect(url_for('search'))
 
 # Remove Book from User's Shelf
 @app.route('/remove_book_from_shelf/<int:book_id>', methods=['POST'])
@@ -257,8 +279,15 @@ def remove_book_from_shelf(book_id):
     book = Book.query.filter_by(id=book_id, user_id=current_user.id).first()
 
     if book:
+        # Remove the book from the database
         db.session.delete(book)
         db.session.commit()
+
+        # Log the activity (optional)
+        activity = RecentActivity(user_id=current_user.id, activity_type='remove_book', description=f'Removed book: {book.title}', timestamp=datetime.utcnow())
+        db.session.add(activity)
+        db.session.commit()
+
         flash(f'Book "{book.title}" removed from your shelf.', 'success')
     else:
         flash('The book could not be found or does not belong to your shelf.', 'danger')
@@ -269,8 +298,18 @@ def remove_book_from_shelf(book_id):
 @app.route('/logout')
 @login_required
 def logout():
+    # Log the logout activity
+    activity = RecentActivity(
+        activity_type='logged_out',
+        description=f'User {current_user.username} logged out.',
+        user_id=current_user.id,
+        timestamp=datetime.utcnow()
+    )
+    db.session.add(activity)
+    db.session.commit()
+
     logout_user()
-    return redirect(url_for('index'))  # Redirect to the home page
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)

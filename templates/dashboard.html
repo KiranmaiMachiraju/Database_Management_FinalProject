@@ -10,40 +10,49 @@
     {% include 'template.html' %}
 
     {% block content %}
-<div class="container mt-5" style="backdrop-filter: blur(20px);">
-    <h2>Welcome, {{ current_user.username }}!</h2>
-    <p>Your Book Collection:</p>
-
-    <div id="book-list" class="row mt-4">
-        {% for book in books %}
-            <div class="col-md-3 mb-4" id="book-{{ book.id }}" class="draggable" data-id="{{ book.id }}">
-                <div class="card">
-                    <!-- Thumbnail Image -->
-                    <img src="{{ book.thumbnail }}" class="card-img-top" alt="Book Thumbnail">
-                    
-                    <div class="card-body">
-                        <h5 class="card-title">{{ book.title }}</h5>
-                        <p class="card-text">Author: {{ book.author }}</p>
-                        <p class="card-text">{{ book.description[:100] }}...</p>
-                        {% if book.rating %}
-                            <p class="card-text">Rating: {{ book.rating }}</p>
-                        {% endif %}
-                        
-                        <!-- Remove Book Button -->
-                        <form method="POST" action="{{ url_for('remove_book_from_shelf', book_id=book.id) }}">
-                            <button type="submit" class="btn btn-danger btn-sm mt-2">Remove Book</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+      <div class="container mt-5">
+        <h1>Welcome, {{ user.username }}!</h1>
     
-    <a href="{{ url_for('logout') }}" class="btn btn-danger mt-3">Logout</a>
-</div>
-{% endblock %}
+        <!-- Recent Activity Section -->
+        <div class="recent-activity mt-4">
+          <h3>Your Recent Activity</h3>
+          <div class="row">
+            {% for activity in activities %}
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ activity.activity_type.capitalize() }}</h5>
+                    <p class="card-text">{{ activity.description }}</p>
+                    <p class="card-text"><small class="text-muted">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+    
+        <!-- User Books Section -->
+        <div class="my-books mt-4">
+          <h3>Your Books</h3>
+          <div class="row">
+            {% for book in books %}
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text">by {{ book.author }}</p>
+                    <form method="POST" action="{{ url_for('remove_book_from_shelf', book_id=book.id) }}" style="display:inline;">
+                      <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
 </body>
 </html>

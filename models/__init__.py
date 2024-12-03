@@ -4,4 +4,4 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 # models/__init__.py
-from .models import db, User, Book  # Import db, User, and Book from models.py
+from .models import db, User, Book, RecentActivity  # Import db, User, and Book from models.py
