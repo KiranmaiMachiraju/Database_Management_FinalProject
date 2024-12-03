@@ -1,0 +1,219 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('/static/images/sample.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    backdrop-filter: blur(20px);
+}
+
+nav {
+    background-color: rgba(255, 255, 255, 0.3); /* Transparent white with blur effect */
+    backdrop-filter: blur(15px);
+    box-shadow: 1px 1px 0 0 rgba(255, 255, 255, 0.8) inset,
+        3px 5px 10px 0 rgba(0, 0, 0, 0.1);
+    padding: 10px 20px;
+    position: sticky; /* Keeps the navbar at the top */
+    top: 0;
+    z-index: 1000;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: space-between; /* Spread tabs evenly */
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    flex: 1; /* Ensures each list item gets equal space */
+    text-align: center; /* Center-align the text inside each tab */
+}
+
+nav ul li a {
+    font-family: Raleway, serif;
+    color: #333; /* Dark grey for text */
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: transform 0.3s ease, background 0.3s ease;
+    background: rgba(255, 255, 255, 0.3); /* Slightly transparent white */
+}
+
+nav ul li a:hover {
+    transform: scale(1.1); /* Slight hover effect */
+    background: rgba(255, 255, 255, 0.8); /* Lighter background on hover */
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-family: Arial, sans-serif;
+}
+
+.book-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Ensure exactly 5 columns per row */
+    gap: 20px; /* Spacing between cards */
+}
+
+.book-item {
+    background: #f8f9fa; /* Light grey background for the card */
+    border: 1px solid #ddd; /* Light grey border */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.book-item:hover {
+    transform: translateY(-5px); /* Lift card on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+}
+
+.book-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.book-item h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333; /* Dark grey */
+}
+
+.book-item p {
+    font-size: 14px;
+    color: #555; /* Slightly lighter grey */
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.book-item .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #17a2b8; /* Teal */
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.book-item .btn:hover {
+    background-color: #138496; /* Darker teal on hover */
+}
+
+/* Book card styling */
+.book-card {
+    height: 450px;
+    width: 290px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #f8f9fa; /* Light grey */
+    border: 1px solid #ddd; /* Light grey border */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.book-card:hover {
+    transform: translateY(-5px); /* Lift card on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+}
+
+.book-card img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.card-body {
+    flex-grow: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.form-inline {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.form-control {
+    width: 75%;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+.btn-primary {
+    width: 20%;
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    background-color: #007bff; /* Blue */
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.75);
+}
+
+.card-body .btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+    background-color: #007bff; /* Blue */
+}
+
+.card-body .btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.card-body .btn-primary:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.75);
+}

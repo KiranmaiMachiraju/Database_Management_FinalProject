@@ -130,8 +130,7 @@ def auth():
 
             if user and check_password_hash(user.password, password):  # Assuming password is hashed
                 login_user(user)
-                flash('Login successful!', 'success')
-                
+
                 # Redirect based on user type (admin or regular user)
                 if user.is_admin:
                     return redirect(url_for('admin_dashboard'))  # Admin should go to admin dashboard
@@ -156,6 +155,7 @@ def auth():
                 flash('Sign Up successful! You can now log in.', 'success')
 
     return render_template('auth.html')
+
 
 # Dashboard Page (User's Books)
 @app.route('/dashboard', methods=['GET', 'POST'])
