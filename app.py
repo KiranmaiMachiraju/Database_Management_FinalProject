@@ -65,11 +65,22 @@ def admin_dashboard():
         flash('Access denied. Admins only.', 'danger')
         return redirect(url_for('index'))
 
-    # Fetch all users and their books
+    # Fetch all users
     users = User.query.all()
-    user_books = {user.id: Book.query.filter_by(user_id=user.id).all() for user in users}
 
-    return render_template('admin_dashboard.html', users=users, user_books=user_books)
+    # Fetch books and recent activities for all users
+    user_books = {user.id: Book.query.filter_by(user_id=user.id).all() for user in users}
+    user_activities = {
+        user.id: RecentActivity.query.filter_by(user_id=user.id).order_by(RecentActivity.timestamp.desc()).limit(8).all()
+        for user in users
+    }
+
+    return render_template(
+        'admin_dashboard.html',
+        users=users,
+        user_books=user_books,
+        user_activities=user_activities,
+    )
 
 
 # CLI Command: Create Admin User
