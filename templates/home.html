@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Book Collection App</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css?family=Raleway:400,400i,700");
+
+        body {
+            background: #f7f7f7;
+            overflow: hidden;
+        }
+        .container {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100vh;
+            z-index: 5;
+            position: relative;
+            .logo {
+                margin: 0 auto;
+                margin-bottom: 10vw;
+                max-width: 200px;
+                background: rgba(255, 255, 255, 0.3);
+                backdrop-filter: blur(10px);
+                border-radius: 100%;
+                img {
+                    width: 100%;
+                }
+            }
+        }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            grid-area: 1/1/2/2;
+            position: relative;
+            a {
+                font-family: Raleway, serif;
+                color: #333;
+                cursor: pointer;
+                font-size: 20px;
+                font-weight: 700;
+                line-height: 1;
+                position: relative;
+                text-align: center;
+                margin: 1vh auto;
+                padding: 2.5vh 0;
+                width: 80%;
+                background: rgba(255, 255, 255, 0.3);
+                backdrop-filter: blur(15px);
+                border-radius: 5px;
+                box-shadow: 1px 1px 0 0 rgba(255, 255, 255, 0.8) inset,
+                    3px 5px 10px 0 rgba(0, 0, 0, 0.1);
+                text-decoration: none;
+                will-change: color, text-shadow, font-size;
+                transition: ease all 0.3s;
+                &:hover {
+                    transform: scale(1.1);
+                    background: rgba(255, 255, 255, 0.8);
+                }
+            }
+        }
+        .wrapper-images {
+            display: flex;
+            flex-direction: column;
+            height: 150vh;
+            justify-content: center;
+            left: 50%;
+            position: absolute;
+            top: 50%;
+            opacity: 0.6;
+            transform: translate3d(-50%, -50%, 0) rotate(22.5deg);
+        }
+        .images-line {
+            animation: runner 20s linear infinite;
+            display: flex;
+            transform: translateX(25%);
+            .line {
+                --tile-margin: 3vw;
+                background-position: 50% 50%;
+                background-size: cover;
+                border-radius: 50%;
+                flex: none;
+                height: 30vh;
+                margin: 3vw;
+                width: 30vh;
+                position: relative;
+                &:after {
+                    content: "";
+                    background: inherit;
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 50%;
+                    top: 3vh;
+                    position: absolute;
+                    background-size: cover;
+                    z-index: -1;
+                    filter: blur(25px) opacity(0.8);
+                }
+                &.large {
+                    border-radius: 20vh;
+                    width: 100vh;
+                }
+            }
+        }
+
+        @keyframes runner {
+            to {
+                transform: translateX(-25%);
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="wrapper-images">
+        <div class="images-line">
+            <div class="line large"
+                style="background-image:url(https://images.inc.com/uploaded_files/image/1920x1080/getty_883231284_200013331818843182490_335833.jpg)">
+            </div>
+    
+            <div class="line"
+                style="background-image:url(https://assets.entrepreneur.com/content/3x2/2000/20150115183825-books-reading.jpeg)">
+            </div>
+    
+            <div class="line"
+                style="background-image:url(https://www.wallpaperflare.com/static/512/909/111/book-old-vintage-chipped-wallpaper.jpg)">
+            </div>
+    
+            <div class="line large" style="background-image:url(https://wallpapercave.com/wp/wp2036897.jpg)"></div>
+    
+            <div class="line" style="background-image:url(https://wallpapercave.com/wp/wp5608270.jpg)"></div>
+    
+            <div class="line"
+                style="background-image:url(https://i.pinimg.com/originals/70/36/60/703660ef4f6169d4221e49082b1b3a04.png)">
+            </div>
+        </div>
+    
+        <div class="images-line">
+            <div class="line"
+                style="background-image:url(https://www.pixelstalk.net/wp-content/uploads/images1/HD-books-wallpaper-backgrounds.jpg)">
+            </div>
+    
+            <div class="line large"
+                style="background-image:url(https://i.pinimg.com/originals/85/3e/35/853e3564bb5a88c7b0a4f6b201a140a6.jpg)">
+            </div>
+    
+            <div class="line"
+                style="background-image:url(https://i.pinimg.com/originals/b7/57/3d/b7573df286cd79d15e38082a8d7d5418.jpg)">
+            </div>
+    
+            <div class="line"
+                style="background-image:url(https://nurturemewild.com/wp-content/uploads/2020/02/how-to-make-and-use-castor-oil-packs-2-500x500.jpghttps://images.unsplash.com/photo-1537151625747-768eb6cf92b2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=685&q=80)">
+            </div>
+    
+            <div class="line large" style="background-image:url(https://wallpapercave.com/wp/wp8442942.jpg)"></div>
+    
+            <div class="line"
+                style="background-image:url(https://i.pinimg.com/736x/0e/b8/2d/0eb82df8a792b0a43adde1bd89757f1f.jpg)"></div>
+        </div>
+    
+        <div class="images-line">
+            <div class="line "
+                style="background-image:url(https://images.squarespace-cdn.com/content/v1/58e2595c3e00be0ae51453aa/1554998951170-5BC0QS1J4FVELH5LRPXI/Nespresso+Campfire+Mocha+Recipe10.jpg?format=1500w)">
+            </div>
+    
+            <div class="line"
+                style="background-image:url(https://i.pinimg.com/originals/76/d4/12/76d412ee75d8fa97c55305b299ba70f5.jpg)">
+            </div>
+    
+            <div class="line large"
+                style="background-image:url(https://yt3.googleusercontent.com/s2CANOVjjVnfQU9iw43LUyZc5DzPucdFcZMm5KkehLUZ8yqTGWUb2xCx2wzbUO1UOK3QRl2N=s900-c-k-c0x00ffffff-no-rj)">
+            </div>
+    
+            <div class="line "
+                style="background-image:url(https://i.pinimg.com/originals/c3/a6/9c/c3a69c4dbdd7fdd9c413635fb90398ed.png)">
+            </div>
+    
+            <div class="line"
+                style="background-image:url(https://i.pinimg.com/736x/4b/1c/04/4b1c04a0aa1985c4dbad1c1af9fe46bf.jpg)"></div>
+    
+            <div class="line large"
+                style="background-image:url(https://i.pinimg.com/originals/8c/92/82/8c9282f39d22146a2a7ff6bd28d37d5e.jpg)">
+            </div>
+    
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="logo">
+            <img src="../static/images/Logo.jpeg" alt="Books Logo">
+        </div>
+        <nav class="menu">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('index') }}">Index</a>
+            <a href="{{ url_for('search') }}">Search</a>
+            <a href="{{ url_for('auth') }}">Login / Sign Up</a>
+            <a href="{{ url_for('admin_login') }}">Admin Login</a>
+        </nav>
+    </div>
+</body>
+</html>

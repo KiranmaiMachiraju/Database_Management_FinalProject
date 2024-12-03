@@ -89,25 +89,34 @@ def create_admin():
             db.session.commit()
             print(f"Admin user {username} created successfully.")
 
-
-# Home Page (Popular Books)
+# Home Page
 @app.route('/')
+def home():
+    return render_template('home.html')
+
+# Index Page
+@app.route('/index')
 def index():
+    # Fetch books data
     url = f'https://www.googleapis.com/books/v1/volumes?q=subject:fiction&orderBy=relevance&maxResults=10&key={API_KEY}'
     response = requests.get(url)
     data = response.json()
 
     books = []
     if 'items' in data:
-        books = [{
-            'title': item['volumeInfo'].get('title', 'No Title'),
-            'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
-            'description': item['volumeInfo'].get('description', 'No description available'),
-            'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', 'https://via.placeholder.com/150'),
-            'link': item['volumeInfo'].get('infoLink', '#')
-        } for item in data['items']]
+        books = [ 
+            {
+                'title': item['volumeInfo'].get('title', 'No Title'),
+                'author': item['volumeInfo'].get('authors', ['Unknown'])[0],
+                'description': item['volumeInfo'].get('description', 'No description available'),
+                'thumbnail': item['volumeInfo'].get('imageLinks', {}).get('thumbnail', 'https://via.placeholder.com/150'),
+                'link': item['volumeInfo'].get('infoLink', '#')
+            } 
+            for item in data['items']
+        ]
 
     return render_template('index.html', books=books)
+
 
 # Auth (Login and Sign-up)
 @app.route('/auth', methods=['GET', 'POST'])
