@@ -32,8 +32,12 @@
                       <h5 class="card-title">{{ book.title }}</h5>
                       <p class="card-text">{{ book.author }}</p>
                       <p class="card-text">{{ book.description[:150] }}...</p>
-                      <a href="{{ book.infoLink }}" class="btn btn-primary" target="_blank">Learn More</a>
-    
+                      
+                      <div class="button-container">
+                        <a href="{{ book.infoLink }}" class="btn btn-primary" target="_blank">Learn More</a>
+                        <a href="https://www.goodreads.com/search?q={{ book.title }}" class="btn btn-secondary" target="_blank">Reviews</a>
+                      </div>
+                    
                       {% if current_user.is_authenticated %}
                         <!-- If user is logged in, show Add to Shelf button -->
                         <form action="{{ url_for('add_book_to_shelf') }}" method="POST" class="mt-3">

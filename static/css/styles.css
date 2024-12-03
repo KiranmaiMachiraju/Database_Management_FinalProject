@@ -123,7 +123,7 @@ h1 {
 
 /* Book card styling */
 .book-card {
-    height: 450px;
+    height: 470px;
     width: 290px;
     display: flex;
     flex-direction: column;
@@ -184,9 +184,23 @@ h1 {
     border: 1px solid #ced4da;
 }
 
+.button-container {
+    display: flex;
+    justify-content: space-between; /* Spread buttons apart */
+    gap: 10px; /* Space between the buttons */
+}
+
+.btn {
+    flex: 1; /* Makes both buttons the same width */
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    text-align: center;
+}
+
 .btn-primary {
     width: 20%;
-    padding: 10px;
+    padding: 15px;
     font-size: 1rem;
     font-weight: bold;
     border-radius: 5px;
@@ -204,16 +218,29 @@ h1 {
 }
 
 .card-body .btn-primary {
-    width: 100%;
+    width: 48%;
     padding: 12px;
     font-size: 1.1rem;
     background-color: #007bff; /* Blue */
+    margin-right: 4%; /* Add space between buttons */
+}
+
+.card-body .btn-secondary {
+    width: 48%;
+    padding: 12px;
+    font-size: 1.1rem;
+    background-color: #6c757d; /* Gray */
 }
 
 .card-body .btn-primary:hover {
     background-color: #0056b3; /* Darker blue on hover */
 }
 
-.card-body .btn-primary:focus {
+.card-body .btn-secondary:hover {
+    background-color: #5a6268; /* Darker gray on hover */
+}
+
+.card-body .btn-primary:focus,
+.card-body .btn-secondary:focus {
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.75);
 }
