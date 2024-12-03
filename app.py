@@ -9,7 +9,7 @@ import requests
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Use a strong secret key
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # Database URI
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/users.db'  # Database URI
 
 # Initialize extensions
 db.init_app(app)  # Initialize the db instance from models.py
