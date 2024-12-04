@@ -6,48 +6,28 @@
     <title>Admin Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
     <style>
-        .btn-primary, .btn-success {
-            background-color: #17a2b8; /* Teal color */
-            border: none;
-            color: white;
-            font-weight: bold;
-            padding: 12px;
-            border-radius: 5px;
-            width: 100%;
-            transition: background-color 0.3s ease;
-        }
-        
-        .btn-primary:hover, .btn-success:hover {
-            background-color: #138496; /* Darker teal on hover */
-        }
-        
-        .btn-primary:focus, .btn-success:focus {
-            box-shadow: 0 0 5px rgba(23, 162, 184, 0.75);
-        }
-        
-        .btn-success {
-            background-color: #17a2b8; /* Teal color for Sign Up */
-            border: none;
-            color: white;
-            font-weight: bold;
-            padding: 12px;
-            border-radius: 5px;
-            width: 100%;
-            transition: background-color 0.3s ease;
-        }
-        
-        .btn-success:hover {
-            background-color: #17a2b8; /* Darker teal on hover */
-        }
-        
-        .btn-success:focus {
-            box-shadow: 0 0 5px rgba(23, 162, 184, 0.75);
-        }
-        
+        .btn-primary {
+    background-color: #17a2b8; /* Teal color */
+    border: none;
+    color: white;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 5px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #138f9c; /* Darker teal on hover */
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 5px rgba(23, 162, 184, 0.75);
+}
         
         /* Additional styling */
         body {
-            font-family: Arial, sans-serif;
+            font-family: Raleway, serif;
             margin: 0;
             padding: 0;
             background-image: url('/static/images/sample.jpg');
@@ -67,7 +47,7 @@
             text-align: center;
             margin-bottom: 10px;
             padding-top: -30px;
-            font-family: Arial, sans-serif;
+            font-family: Raleway, serif;
             color: #333;
         }
         
@@ -156,7 +136,7 @@
 </head>
 <body>
     {% include 'template.html' %}
-    <div class="container mt-5">
+    <div class="container mt-5"  style=" padding-top: 200px; padding-bottom: 320px;">
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card shadow">

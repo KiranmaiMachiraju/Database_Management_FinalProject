@@ -5,6 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+    <style>
+        /* Style for the table */
+        table.table {
+            background-color: #f8f9fa; /* Light off-white background for the table */
+            border: 1px solid #dee2e6; /* Subtle border for the table */
+        }
+    
+        /* Style for table rows */
+        table.table tbody tr {
+            background-color: #ffffff; /* White background for table rows */
+            border-bottom: 1px solid #dee2e6; /* Separator for each row */
+        }
+    
+        /* Add padding and spacing for table cells */
+        table.table td, table.table th {
+            padding: 1rem;
+            vertical-align: middle; /* Align content to the middle */
+        }
+    
+        /* Bold and centered table headers */
+        table.table thead th {
+            background-color: #e9ecef; /* Slightly darker background for headers */
+            font-weight: bold;
+            text-align: center;
+        }
+    
+        /* No books or activities message styling */
+        table.table p {
+            color: #6c757d; /* Muted color for placeholder text */
+            font-family: Raleway, serif;
+            margin: 0;
+        }
+    
+        /* Style for lists within the table */
+        table.table ul {
+            list-style-type: none; /* Remove default bullet points */
+            padding: 0; /* Remove padding */
+            margin: 0; /* Remove margin */
+        }
+    
+        table.table ul li {
+            margin-bottom: 0.5rem; /* Add spacing between list items */
+            font-family: Raleway, serif;
+        }
+    </style>
+    
 </head>
 <body>
     {% extends 'template.html' %}
@@ -67,7 +113,6 @@
     {% endif %}
     {% endblock %}
     
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
