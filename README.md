@@ -110,25 +110,51 @@ Here is an overview of the project's folder structure:
 Database_Management_FinalProject/
 │
 ├── app.py                # Main Python file that runs the Flask app
+├── config.py             # Configuration file for Flask settings (if exists)
 ├── requirements.txt      # List of project dependencies (Flask, SQLAlchemy, etc.)
-├── templates/            # Contains all the HTML templates
-│   ├── index.html        # Home page template
-│   └── about.html        # About page template
-|   └── about.html        # About page template
-|   └── about.html        # About page template
-|   └── about.html        # About page template
+├── .gitignore            # Git ignore file to exclude unnecessary files
+├── README.md             # Project documentation (this file)
 │
 ├── static/               # Contains static files (CSS, JavaScript, images, etc.)
-│   └── css/
-│       └── app.css       # Custom CSS for styling
+│   ├── css/              # Custom CSS files
+│   │   ├── app.css       # Custom CSS for styling
+│   │   └── bootstrap.min.css  # Bootstrap CSS (if included)
+│   ├── js/               # JavaScript files
+│   │   ├── app.js        # Custom JS for functionality
+│   │   └── jquery.min.js # jQuery (if included)
+│   └── images/           # Folder for images
+│       └── logo.png      # Logo image (if included)
 │
-└── README.md             # Project documentation (this file)
+├── templates/            # Contains all HTML templates
+│   ├── admin_login.html  # Admin login page
+│   ├── admin_dashboard.html # Admin dashboard page
+│   ├── auth.html         # Login and sign-up page
+│   ├── dashboard.html    # User's dashboard page
+│   ├── home.html         # Home page template
+│   ├── index.html        # Index page (displays Google Books API data)
+│   └── search.html       # Search results page for books
+│
+├── models/               # Database models directory
+│   ├── __init__.py       # Initializes the models package
+│   ├── user.py           # User model for database interactions
+│   ├── book.py           # Book model for book-related data
+│   └── recent_activity.py # Recent activity model for tracking user actions
+│
+├── migrations/           # Flask-Migrate migrations folder
+│   └── versions/         # Migration version scripts
+│       └── abc123_def456.py  # Example migration file
+|
 ```
 
-- `app.py`: The main entry point of the application, which contains the Flask routes and logic for handling HTTP requests.
-- `templates/`: Directory that stores HTML templates, including `index.html` for the home page and `about.html` for the about page.
-- `static/`: Directory containing static assets like CSS files, images, and JavaScript files.
-- `requirements.txt`: A text file listing the Python dependencies, which can be installed using `pip install -r requirements.txt`.
+- app.py: The core file where Flask routes are defined, user login is managed, and the Google Books API is accessed.
+- config.py: This is typically where configurations for the app are stored, such as secret keys, database URIs, and third-party API keys (like the Google Books API). This might not be in your existing project but is a good practice to include.
+- requirements.txt: List of dependencies like Flask, Flask-SQLAlchemy, Flask-Login, etc.
+- .gitignore: File to specify which files/folders to ignore when pushing to GitHub (like virtual environments, database files, etc.).
+- README.md: Project documentation with setup instructions and feature explanations.
+- static/: Stores CSS, JS, and image files.
+- templates/: Stores HTML files for rendering views. These files interact with your backend (Flask routes) and provide dynamic content like user dashboards and search results.
+- models/: Contains Python classes defining your database schema using SQLAlchemy (e.g., User, Book, RecentActivity).
+- migrations/: Used by Flask-Migrate to store migration scripts for changing the database schema over time.
 
 ## License
 
